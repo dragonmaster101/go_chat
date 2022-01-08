@@ -1,0 +1,9 @@
+{
+    "model" : "hugginface/facebook",
+    "token" : "None",
+    "instances" : [
+        {"user":"Hello" , "bot":"Hello How are You!"},
+        {"user":"I am fine" , "bot":"I am also doing fine.Do you have any hobbies?"},
+        {"user":"I love to code" , "bot":"I am more of a writer than a coder"}
+    ]
+}
