@@ -5,7 +5,7 @@ import (
 	"github.com/dragonmaster101/go_chat/chat"
 )
 
-var API_TOKEN string = "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";
+var API_TOKEN string = "{your_hugging_face_api_token}";
 var API_URL string = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill";
 
 // func Start(){
