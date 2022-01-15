@@ -79,8 +79,8 @@ func BasicConversationOption(token , url string) *ConversationOptions{
 	return &options;
 }
 
-func LoadConversationOption(path string , token *string) *ConversationOptions {
-	options := ConversationOptions{Token: token , LogFilePath: path , Load: true};
+func LoadConversationOption(path string , token string) *ConversationOptions {
+	options := ConversationOptions{Token: &token , LogFilePath: path , Load: true};
 	return &options;
 }
 
@@ -167,7 +167,7 @@ func (convo *Conversation) Init(options *ConversationOptions){
 
 	switch options.Save {
 	case true:
-		convo.initWithLog(*options.Token , options.ModelUrl , options.Name)
+		convo.initAndLog(*options.Token , options.ModelUrl , options.Name)
 	default:
 	}
 }
@@ -185,13 +185,8 @@ func (convo *Conversation) initBasic(token , modelUrl string) {
 	convo.initEmpty();
 	convo.ModelUrl = modelUrl;
 	convo.Token = token;
-}
-
-func (convo *Conversation) initWithLog(token , modelUrl , name string) {
-	convo.initEmpty();
 	convo.ModelUrl = modelUrl;
 	convo.Token = token;
-	convo.CreateLog(name);
 }
 
 /*
@@ -248,6 +243,10 @@ func (convo *Conversation) initFromLog(log *ConversationLog , token *string){
 	}
 }
 
+func (convo *Conversation) initAndLog(token string , modelUrl , name string) {
+	convo.initBasic(token , modelUrl);
+	convo.CreateLog(name);
+}
 
 
 /*
@@ -346,6 +345,12 @@ func (convo *Conversation) updateLog(){
 func (convo *Conversation) updateChatHistory(userHistory , botHistory []string){
 	convo.UserInputs = userHistory;
 	convo.BotInputs = botHistory;
+}
+
+
+func (convo *Conversation) Auth(API_TOKEN , API_URL string) {
+	convo.Token = API_TOKEN;
+	convo.ModelUrl = API_URL;
 }
 
 /*
@@ -512,16 +517,9 @@ func (log *ConversationLog) initSafe(convo *Conversation , Model string){
 
 Conversation Log Types End 
 
-<---------------------------------------------------------------------------------------------->
-
-*/
-
-/*
-
-<----------------------------------------------------------------------------------------------->
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 Random Helper Functions
-
 */
 
 // terminal input helper function Displays the given string and waits for user input
