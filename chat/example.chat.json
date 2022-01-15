@@ -1,5 +1,6 @@
 {
-    "model" : "hugginface/facebook",
+    "safe": true,
+    "model" : "hugginface/facebook-blenderbot",
     "token" : "None",
     "instances" : [
         {"user":"Hello" , "bot":"Hello How are You!"},
