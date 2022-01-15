@@ -48,6 +48,7 @@ type Conversation struct {
 	Token      string // Huggingface Token
 
 	UserInputs []string
+	userUpdated bool 
 	BotInputs  []string
 
 	Log        *ConversationLog
@@ -314,20 +315,14 @@ func (convo *Conversation) CreateUnSafeLog(name string) {
 
 func (convo *Conversation) SaveLog(){
 
-	convo.updateLog();
-
-	file , err := os.Create(convo.LogPath);
-	if err != nil {
-		panic(err);
-	}
-	defer file.Close();
-
-	json.NewEncoder(file).Encode(convo.Log);
-}
-
-func (convo *Conversation) updateLog(){
-	
 	log := ConversationLog{};
+
+	switch convo.Log {
+	case nil :
+		err := fmt.Errorf("conversation Log is nil in (*Conversation).SaveLog() Method please call CreateLog before this");
+		logger.Fatal(err);	
+	default :
+	}
 
 	if convo.Log.Safe {
 		options := SafeLogOptions(convo.ModelUrl , convo);
@@ -340,11 +335,31 @@ func (convo *Conversation) updateLog(){
 
 		convo.Log = &log;
 	}
+
+	file , err := os.Create(convo.LogPath);
+	if err != nil {
+		panic(err);
+	}
+	defer file.Close();
+
+	json.NewEncoder(file).Encode(convo.Log);
 }
 
 func (convo *Conversation) updateChatHistory(userHistory , botHistory []string){
 	convo.UserInputs = userHistory;
 	convo.BotInputs = botHistory;
+}
+
+func (convo *Conversation) UpdateUser(userInput string){
+	if convo.userUpdated {
+		convo.UserInputs[len(convo.UserInputs)-1] = userInput;
+		return;
+	}
+	convo.updateChatHistory(
+		append(convo.UserInputs , userInput),
+		append(convo.BotInputs , "None"),
+	)
+	convo.userUpdated = true;
 }
 
 
@@ -362,7 +377,19 @@ Sends a POST request to the hugginface Inference API with the given API_TOKEN an
 -> Gets response and decodes the json into the Response Data Type 
 -> Returns the generated_response field from the request response as a string
 */
-func (convo *Conversation) Query(userInput string) string{
+func (convo *Conversation) Query(userInputPtr *string) string{
+	var userInput string
+	switch userInputPtr {
+	case nil :
+		if !convo.userUpdated{
+			logger.Fatal("No user input provided in (*Conversation).Query()");
+		}
+	default:	
+		userInput = *userInputPtr;
+	}
+	if convo.userUpdated {
+		userInput = convo.UserInputs[len(convo.UserInputs)-1];
+	}
 
 	body := Body{};
 	body.GeneratedResponses = convo.BotInputs;
@@ -390,22 +417,34 @@ func (convo *Conversation) Query(userInput string) string{
 	
 	res := respBody.GeneratedText;
 
-	convo.updateChatHistory(
-		append(convo.UserInputs , userInput),
-		append(convo.BotInputs , res),
-	);
+	if !convo.userUpdated {
+		convo.updateChatHistory(
+			append(convo.UserInputs , userInput),
+			append(convo.BotInputs , res),
+		);
+	} else {
+		convo.BotInputs[len(convo.BotInputs)-1] = res;
+		convo.userUpdated = false;
+	}
 
 	return res;
 }
 
-func (convo *Conversation) QueryTest(userInput string) string{
-	res := "This is the bot reply " + userInput;
+// func (convo *Conversation) QueryTest(userInput string) string{
+// 	res := "This is the bot reply " + userInput;
 
-	convo.UserInputs = append(convo.UserInputs , userInput);
-	convo.BotInputs = append(convo.BotInputs, res);
+// 	if !convo.userUpdated {
+// 		convo.updateChatHistory(
+// 			append(convo.UserInputs , userInput),
+// 			append(convo.BotInputs , res),
+// 		);
+// 	} else {
+// 		convo.BotInputs = append(convo.BotInputs, res);
+// 		convo.userUpdated = false;
+// 	}
 
-	return res;
-}
+// 	return res;
+// }
 
 
 /*
