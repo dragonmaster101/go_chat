@@ -8,22 +8,12 @@ import (
 var API_TOKEN string = "{your_hugging_face_api_token}";
 var API_URL string = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill";
 
-// func Start(){
-// 	convo := chat.Conversation{};
-// 	convo.Init();
-// 	for {
-// 		input := chat.Input("User : ");
-// 		reply := chat.Query(input , &convo);
-// 		out := fmt.Sprintf("Bot : %v\n" , reply);
-// 		chat.Print(out);
-// 	}
-// }
-
 func main(){
 
 	convo := chat.Conversation{};
-	convo.Init(chat.SaveConversationOption(API_TOKEN , API_URL , "test"));
-
-	fmt.Println(convo.Query("hi"));
+	convo.Init(nil);
+	convo.Auth(API_TOKEN , API_URL);
+	
+	fmt.Println(convo.QueryTest("testing!!"));
 	convo.SaveLog();
 }
